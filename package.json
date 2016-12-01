@@ -7,7 +7,7 @@
     "start": "static -a 0.0.0.0 -p 8000",
     "build": "webpack",
     "clean": "rimraf ./dist",
-    "gh-pages": "gh-pages -s .",
+    "gh-pages": "gh-pages -d .",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {

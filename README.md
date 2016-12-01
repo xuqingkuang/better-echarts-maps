@@ -44,8 +44,10 @@
 ## 在 ECharts 中使用注册的新地图
 
 地图具体参数可以参考 http://echarts.baidu.com/examples.html
+
 地图坐标具体使用方法可以参考 http://echarts.baidu.com/demo.html#effectScatter-map
-也可以参考项目的 Demo http://xuqingkuang.github.io/better-echarts-map
+
+也可以参考项目的 Demo http://xuqingkuang.github.io/better-echarts-maps
 
 所有地图的名称对照
 
