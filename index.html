@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html>
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title>Better Echarts Maps</title>
+    <link rel="stylesheet" href="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/css/bootstrap.css" />
+    <style>
+      #content > div {
+        height: 600px;
+      }
+      #sidebar-container {
+        overflow-y: scroll;
+      }
+      #echarts-map {
+        height: 600px;
+      }
+    </style>
+  </head>
+  <body class="container-fluid">
+    <h1>Better ECharts Maps</h1>
+    <div class="row">
+      <div class="col-xs-12">
+        <ul id="navigation" class="nav nav-tabs">
+          <li role="presentation" class="active">
+            <a href="#chinaMaps">中国地图</a>
+          </li>
+          <li id="tab-" role="presentation">
+            <a href="#chinaCititesCoordinate">中国城市坐标</a>
+          </li>
+        </ul>
+      </div>
+    </div>
+    <div id="content" class="row">
+      <div id="sidebar-container" class="col-xs-4">
+        <ul id="sidebar" class="list-group"></ul>
+      </div>
+      <div id="echarts-container" class="col-xs-8">
+        <div id="echarts-map"></div>
+      </div>
+    </div>
+    <script src="https://cdn.staticfile.org/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdn.staticfile.org/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdn.staticfile.org/echarts/3.3.1/echarts.min.js"></script>
+    <script src="./dist/all.js"></script>
+    <script>
+      // Initial maps
+      var map; // ECharts map element
+      var MAPS = betterEChartsMaps;
+      $.getScript('./dist/china-cities-coordinate.js', function() {
+        $.extend(MAPS, betterEChartsMaps);
+        DATA.chinaCititesCoordinate.sidebar = $.map(MAPS.ChinaCitiesCoordinate, function(v, k) {
+          return k;
+        });
+      });
+      // Data
+      var SELECTED_CITIES = [];
+      var DATA = {
+        chinaMaps: {
+          title: '中国地图',
+          sidebar: $.map(MAPS.all, function(m) {
+            return m[0];
+          }),
+          clickHandler: function(evt) {
+            var $target = $(evt.target);
+            $target.parent().find('li').removeClass('active');
+            $target.addClass('active');
+            var mapName = $target.text();
+            var type = window.location.hash.substr(1);
+            var option = DATA[type].option(mapName);
+            map.setOption(option);
+          },
+          option: function(mapName) {
+            return {
+              series: [
+                {
+                  name: mapName,
+                  type: 'map',
+                  mapType: mapName,
+                  label: {
+                    normal: {
+                      show: true
+                    },
+                    emphasis: {
+                      show: true
+                    }
+                  }
+                }
+              ]
+            };
+          },
+        },
+        chinaCititesCoordinate: {
+          title: '中国城市坐标',
+          sidebar: [],
+          clickHandler: function(evt) {
+            var $target = $(evt.target);
+            $target.toggleClass('active');
+            var mapName = $target.text();
+            var indexOfCity = SELECTED_CITIES.indexOf(mapName)
+            if (indexOfCity < 0) {
+              SELECTED_CITIES.push(mapName);
+            } else {
+              SELECTED_CITIES.splice(indexOfCity, 1);
+            }
+            var type = window.location.hash.substr(1);
+            var option = DATA[type].option(SELECTED_CITIES);
+            map.setOption(option);
+          },
+          option: function(cityNames) {
+            var data = $.map(cityNames, function(cityName, index) {
+              return {
+                name: cityName,
+                value: MAPS.ChinaCitiesCoordinate[cityName].concat(index + 10)
+              };
+            });
+
+            return {
+              geo: {
+                map: 'china',
+                label: {
+                  emphasis: {
+                    show: false
+                  }
+                },
+                roam: true,
+              },
+              series : [
+                {
+                  name: '城市',
+                  type: 'effectScatter',
+                  coordinateSystem: 'geo',
+                  data: data,
+                  symbolSize: function (val) {
+                    return val[2] / 10;
+                  },
+                  showEffectOn: 'render',
+                  rippleEffect: {
+                    brushType: 'stroke'
+                  },
+                  hoverAnimation: true,
+                  label: {
+                    normal: {
+                      formatter: '{b}',
+                      position: 'right',
+                      show: true
+                    }
+                  },
+                }
+              ]
+            };
+          },
+        }
+      }
+
+      // Register maps
+      $.each(MAPS.all, function(i, m) {
+        echarts.registerMap(m[0], m[1]);
+      });
+
+      // Load contents
+      var loadContent = function(type) {
+        SELECTED_CITIES = [];
+        var echartsEl = document.getElementById('echarts-map');
+        echarts.dispose(echartsEl);
+        map = echarts.init(echartsEl);
+        var data = DATA[type];
+        var $container = $('#sidebar');
+        $container.empty();
+        $.each(data.sidebar, function(i, sidebarName) {
+          $('<li class="list-group-item">' + sidebarName + '</li>')
+            .appendTo($container);
+        });
+        $container
+          .off('click')
+          .on('click', data.clickHandler);
+        $('#sidebar li:first').click();
+      }
+
+      // Listen hashChanged event
+      window.onhashchange = function() {
+        loadContent(window.location.hash.substr(1));
+      };
+
+      $('#navigation a').click(function() {
+        $(this).tab('show');
+      });
+
+      // Redirect to correct tab
+      $('#navigation a:first').click();
+      var type = window.location.hash.substr(1);
+      window.location.href = $('#navigation a:first').attr('href');
+      loadContent(window.location.hash.substr(1));
+    </script>
+  </body>
+</html>
