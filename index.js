@@ -9,7 +9,7 @@ var all = all.concat(chinaProvinces.ChinaProvinces);
 module.exports = {
   all: all,
   China: china.China,
-  ChinaRegions: chinaRegions,
+  ChinaRegions: chinaRegions.ChinaRegions,
   ChinaProvinces: chinaProvinces.ChinaProvinces,
-  ChinaCitiesCoordinate: chinaCitiesCoordinate
+  ChinaCitiesCoordinate: chinaCitiesCoordinate.ChinaCitiesCoordinate
 }
